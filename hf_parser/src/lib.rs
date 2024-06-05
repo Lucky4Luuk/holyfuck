@@ -109,8 +109,7 @@ pub fn parse(code: String) -> Result<Vec<Token>, ParseError> {
 
 #[cfg(test)]
 mod tests {
-    extern crate std;
-    use std::string::ToString;
+    use alloc::string::ToString;
     use super::*;
 
     #[test]
