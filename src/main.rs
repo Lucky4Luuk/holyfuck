@@ -1,3 +1,6 @@
 fn main() {
-    println!("Hello, world!");
+    println!("{:#?}", hf_parser::parse(r#"
+:main{
+    +++
+}"#.to_string()));
 }
