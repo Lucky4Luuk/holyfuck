@@ -16,6 +16,8 @@ pub enum ParseError {
     UnexpectedCharacter(char),
     #[error("unexpected token {0:?}")]
     UnexpectedToken(Token),
+    #[error("unexpected token {0}")]
+    InvalidSpecialCharacterFound(char),
 }
 
 #[derive(Debug, PartialEq)]
@@ -41,6 +43,37 @@ impl Token {
                 '-' => Ok(Token::Expr(Expr::Sub)),
                 '<' => Ok(Token::Expr(Expr::MoveLeft)),
                 '>' => Ok(Token::Expr(Expr::MoveRight)),
+                // Starts a module import
+                '#' => {
+                    let mut path = String::new();
+                    'path_gather: loop {
+                        if let Some(c) = code.next() {
+                            match c {
+                                '+' | '-' | '<' | '>' | '[' | ']' | '.' | ',' | '*' | '^' | '#' | '{' | '}' | ':' | '@' => return Err(ParseError::InvalidSpecialCharacterFound(c)),
+                                '\n' | '\r' => break 'path_gather,
+                                _ => path.push(c),
+                            }
+                        } else {
+                            break 'path_gather;
+                        }
+                    }
+                    Ok(Token::ModuleImport { path })
+                },
+                // Starts a function call
+                '@' => {
+                    let mut name = String::new();
+                    'name_gather: loop {
+                        if let Some(c) = code.next() {
+                            match c {
+                                '+' | '-' | '<' | '>' | '[' | ']' | '.' | ',' | '*' | '^' | '#' | '{' | '}' | ':' | '@' | '\n' | '\r' => break 'name_gather,
+                                _ => name.push(c),
+                            }
+                        } else {
+                            break 'name_gather;
+                        }
+                    }
+                    Ok(Token::FuncCall { name })
+                },
                 // Starts a function declaration
                 ':' => {
                     let mut name = String::new();
@@ -148,6 +181,21 @@ Another approach could be to simply leave the value in memory and hope the calle
                         Token::Expr(Expr::Sub),
                     ]
                 }
+            ],
+        }]);
+        assert_eq!(expected, parse(code));
+    }
+
+    #[test]
+    fn func_call() {
+        let code = r#"
+:main{
+    @test
+}"#.to_string();
+        let expected = Ok(vec![Token::FuncDecl {
+            name: "main".to_string(),
+            children: vec![
+                Token::FuncCall { name: "test".to_string() },
             ],
         }]);
         assert_eq!(expected, parse(code));
