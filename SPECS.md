@@ -2,10 +2,10 @@
 These are still heavily subject to change! Nothing can be considered stable here.
 
 ## Stack
-The stack is simply a list of values. Each value is a 8 bit unsigned integer. The stack does not have a specified size nor a size limit, and grows as needed. It can be interacted with using specific [operators](Operators).
+The stack is simply a list of values. Each value is a 8 bit unsigned integer. The stack does not have a specified size nor a size limit, and grows as needed. It can be interacted with using specific [operators](#operators).
 
 ## Memory
-All memory is interfaced with through a memory pointer value. The size of this pointer is platform dependent, and can't directly be written to or read from. It can, however, be reset to 0, or read from the stack. See [operators](Operators). The memory pointer ALWAYS points to a 1 byte value, regardless of platform.
+All memory is interfaced with through a memory pointer value. The size of this pointer is platform dependent, and can't directly be written to or read from. It can, however, be reset to 0, or read from the stack. See [operators](#operators). The memory pointer ALWAYS points to a 1 byte value, regardless of platform.
 
 ## Operators
 All default Brainfuck operators still behave functionally the same, except for the input and output operators.
