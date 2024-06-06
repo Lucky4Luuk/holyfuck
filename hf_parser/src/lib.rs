@@ -43,6 +43,29 @@ impl Token {
                 '-' => Ok(Token::Expr(Expr::Sub)),
                 '<' => Ok(Token::Expr(Expr::MoveLeft)),
                 '>' => Ok(Token::Expr(Expr::MoveRight)),
+                // Starts a loop declaration
+                '[' => {
+                    let mut children = Vec::new();
+                    'gather: loop {
+                        // if let Some(c) = code.next() {
+                        //     if c == ']' {
+                        //         break 'gather;
+                        //     } else {
+                        //         children.push()
+                        //     }
+                        // } else {
+                        //     return Err(ParseError::UnexpectedEof);
+                        // }
+                        let token = Self::parse(code)?;
+                        match token {
+                            Token::Eof => return Err(ParseError::UnexpectedEof),
+                            Token::Ignore(']') => break 'gather,
+                            Token::Ignore(_) => {},
+                            _ => children.push(token),
+                        }
+                    }
+                    Ok(Token::Loop { children })
+                },
                 // Starts a module import
                 '#' => {
                     let mut path = String::new();
@@ -148,15 +171,14 @@ mod tests {
     #[test]
     fn func_decl() {
         let code = r#"
-This function will add 2 numbers and return the value back to the stack
-Another approach could be to simply leave the value in memory and hope the caller is okay with the memory pointer being shifted
 :add{
-    ,>,<    Read our 2 input values from the stack
-    [>+<-]  Add the 2 numbers
-    >.<     Push the result to the stack
-    [-]     Clean up the result from memory
+    +++
 }"#.to_string();
-        let expected = Ok(vec![Token::FuncDecl { name: "add".to_string(), children: vec![Token::Expr(Expr::MoveRight), Token::Expr(Expr::MoveLeft), Token::Expr(Expr::MoveRight), Token::Expr(Expr::Add), Token::Expr(Expr::MoveLeft), Token::Expr(Expr::Sub), Token::Expr(Expr::MoveRight), Token::Expr(Expr::MoveLeft), Token::Expr(Expr::Sub)] }]);
+        let expected = Ok(vec![Token::FuncDecl { name: "add".to_string(), children: vec![
+            Token::Expr(Expr::Add),
+            Token::Expr(Expr::Add),
+            Token::Expr(Expr::Add),
+        ]}]);
         assert_eq!(expected, parse(code));
     }
 
@@ -196,6 +218,24 @@ Another approach could be to simply leave the value in memory and hope the calle
             name: "main".to_string(),
             children: vec![
                 Token::FuncCall { name: "test".to_string() },
+            ],
+        }]);
+        assert_eq!(expected, parse(code));
+    }
+
+    #[test]
+    fn basic_loop() {
+        let code = r#"
+:main{
+    +++[-]
+}"#.to_string();
+        let expected = Ok(vec![Token::FuncDecl {
+            name: "main".to_string(),
+            children: vec![
+                Token::Expr(Expr::Add),
+                Token::Expr(Expr::Add),
+                Token::Expr(Expr::Add),
+                Token::Loop { children: vec![Token::Expr(Expr::Sub)] },
             ],
         }]);
         assert_eq!(expected, parse(code));
