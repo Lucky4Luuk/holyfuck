@@ -145,6 +145,11 @@ pub enum Expr {
     MoveLeft,
 }
 
+pub struct Module {
+    pub module_name: String,
+    pub tokens: Vec<Token>,
+}
+
 fn parse_inner(code: &mut Chars) -> Result<Vec<Token>, ParseError> {
     let mut r = Vec::new();
     loop {
@@ -159,8 +164,11 @@ fn parse_inner(code: &mut Chars) -> Result<Vec<Token>, ParseError> {
     Ok(r)
 }
 
-pub fn parse(code: String) -> Result<Vec<Token>, ParseError> {
-    parse_inner(&mut code.chars())
+pub fn parse(module_name: String, code: String) -> Result<Module, ParseError> {
+    Ok(Module {
+        module_name,
+        tokens: parse_inner(&mut code.chars())?
+    })
 }
 
 #[cfg(test)]

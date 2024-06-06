@@ -1,5 +1,5 @@
 [package]
-name = "hf_parser"
+name = "hf_codegen"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,3 +7,7 @@ edition = "2021"
 
 [dependencies]
 thiserror-no-std = "2.0"
+
+hf_parser = { path = "../hf_parser" }
+
+iced-x86 = { version = "1.21.0", default-features = false, features = ["no_std","encoder","code_asm"] }

@@ -1,4 +1,5 @@
-workspace = { members = ["hf_parser"] }
+workspace = { members = ["hf_codegen","hf_parser"] }
+
 [package]
 name = "holyfuck"
 version = "0.1.0"
@@ -8,3 +9,4 @@ edition = "2021"
 
 [dependencies]
 hf_parser = { path = "hf_parser" }
+hf_codegen = { path = "hf_codegen" }
