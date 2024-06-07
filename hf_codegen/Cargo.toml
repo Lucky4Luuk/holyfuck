@@ -7,7 +7,9 @@ edition = "2021"
 
 [dependencies]
 thiserror-no-std = "2.0"
+hashbrown = "0.14"
 
 hf_parser = { path = "../hf_parser" }
 
+#x86/x64
 iced-x86 = { version = "1.21.0", default-features = false, features = ["no_std","encoder","code_asm"] }

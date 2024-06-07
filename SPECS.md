@@ -40,6 +40,8 @@ Functions can be called as such:
 ```
 Because the stack is shared throughout the entire program, there is no need for function arguments. Just make sure to pop the right values to the stack, and the function can read these and act upon them. Isn't that simple?
 
+**One caveat with functions is that they must be defined before they are called. This is done to make compiler development slightly easier, and might change in the future.**
+
 ## Modules
 Every good and modern language needs some sort of module/namespace system.
 HolyFuck is no exception. Modules are declared simply by name, and imported with a special operator.

@@ -1,7 +1,11 @@
 fn main() {
     let module = hf_parser::parse("main".to_string(), r#"
+:test{
+    -
+}
 :main{
     +
+    @test
 }"#.to_string()).unwrap();
     // println!("{:#?}", module);
     let machine_code = hf_codegen::gen_code(hf_codegen::Target::X86_64, 0x1234_5678, vec![module]).unwrap();

@@ -15,6 +15,10 @@ pub use arch::Target;
 pub enum CodegenError {
     #[error("generic error {0}")]
     Generic(String),
+    #[error("function `{0}` not defined")]
+    FuncNotDefined(String),
+    #[error("function with name `{0}` already defined in current scope")]
+    FuncNameInUse(String),
 }
 
 pub fn gen_code(target: Target, addr: u64, modules: Vec<Module>) -> Result<Vec<u8>, CodegenError> {
