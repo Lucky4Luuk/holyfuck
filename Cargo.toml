@@ -10,3 +10,4 @@ edition = "2021"
 [dependencies]
 hf_parser = { path = "hf_parser" }
 hf_codegen = { path = "hf_codegen" }
+mmap-rs = "0.6.1"

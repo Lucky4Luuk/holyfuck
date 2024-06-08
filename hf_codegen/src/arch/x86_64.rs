@@ -49,12 +49,19 @@ fn translate_token(token: Token, a: &mut CodeAssembler, func_map: &mut HashMap<S
 
 pub fn gen_code(addr: u64, modules: Vec<Module>) -> Result<Vec<u8>, CodegenError> {
     let mut a = CodeAssembler::new(64).map_err(|e| CodegenError::Generic(format!("{e}")))?;
+    let mut start_label = a.create_label();
+    a.call(start_label).map_err(|e| CodegenError::Generic(format!("{e}")))?;
     let mut func_map = HashMap::new();
 
     for module in modules {
         for token in module.tokens {
             translate_token(token, &mut a, &mut func_map)?;
         }
+    }
+
+    a.set_label(&mut start_label).map_err(|e| CodegenError::Generic(format!("{e}")))?;
+    if let Some(label) = func_map.get(&String::from("main")) {
+        a.call(*label).map_err(|e| CodegenError::Generic(format!("{e}")))?;
     }
 
     a.ret().map_err(|e| CodegenError::Generic(format!("{e}")))?;
