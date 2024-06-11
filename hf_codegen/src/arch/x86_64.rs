@@ -23,9 +23,31 @@ fn translate_expr(expr: Expr, a: &mut CodeAssembler) -> Result<(), CodegenError>
 fn translate_token(token: Token, a: &mut CodeAssembler, func_map: &mut HashMap<String, CodeLabel>) -> Result<(), CodegenError> {
     match token {
         Token::Expr(expr) => translate_expr(expr, a)?,
+        Token::Loop { children } => {
+            let mut start_label = a.create_label();
+            let mut end_label = a.create_label();
+
+            a.set_label(&mut start_label).map_err(|e| CodegenError::Generic(format!("{e}")))?;
+
+            a.mov(rcx, byte_ptr(r8)).map_err(|e| CodegenError::Generic(format!("{e}")))?;
+            a.jrcxz(end_label).map_err(|e| CodegenError::Generic(format!("{e}")))?;
+
+            let mut cur_scope_func_map = func_map.clone();
+            for child in children {
+                translate_token(child, a, &mut cur_scope_func_map)?;
+            }
+
+            // a.mov(cx, byte_ptr(r8)).map_err(|e| CodegenError::Generic(format!("{e}")))?;
+            // a.jcxz(end_label).map_err(|e| CodegenError::Generic(format!("{e}")))?;
+            a.cmp(byte_ptr(r8), 0).map_err(|e| CodegenError::Generic(format!("{e}")))?;
+            a.jne(start_label).map_err(|e| CodegenError::Generic(format!("{e}")))?;
+
+            a.set_label(&mut end_label).map_err(|e| CodegenError::Generic(format!("{e}")))?;
+        },
         Token::FuncDecl { name, children } => {
             let mut label = a.create_label();
             a.set_label(&mut label).map_err(|e| CodegenError::Generic(format!("{e}")))?;
+            a.zero_bytes().map_err(|e| CodegenError::Generic(format!("{e}")))?;
             if func_map.insert(name.clone(), label).is_some() {
                 return Err(CodegenError::FuncNameInUse(name));
             }

@@ -1,7 +1,7 @@
 fn main() {
     let module = hf_parser::parse("main".to_string(), r#"
 :test{
-    -
+    [-]
 }
 :main{
     +
