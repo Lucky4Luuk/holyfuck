@@ -20,8 +20,7 @@ All default Brainfuck operators still behave functionally the same, except for t
 | ] | Jump back to the matching [ if the byte at the memory pointer is nonzero |
 | . | Push the byte at the memory pointer to the stack |
 | , | Pop a byte from the stack and write it to the current memory pointer |
-| * | Pops N values from the stack. These values are turned into a single value (Little Endian, first byte popped = least significant byte) and used as the new active memory address. N is based on the current platform and the bits needed. A 32 bit platform will require N=4, but a 64 bit platform will require N=8! |
-| ^ | Reset the current memory pointer to 0 |
+| $ | Starts an assembly instruction. Everything on this line until a linebreak is considered part of the instruction |
 
 TODO: Define what happens when popping from an empty stack.
 

@@ -18,6 +18,8 @@ pub enum ParseError {
     UnexpectedToken(Token),
     #[error("unexpected token {0}")]
     InvalidSpecialCharacterFound(char),
+    #[error("empty asm instruction")]
+    EmptyAsmInstruction,
 }
 
 #[derive(Debug, PartialEq)]
@@ -31,6 +33,10 @@ pub enum Token {
     FuncCall { name: String },
     Loop { children: Vec<Token> },
     Expr(Expr),
+    StackPush,
+    StackPop,
+
+    Asm(String),
 }
 
 impl Token {
@@ -43,6 +49,26 @@ impl Token {
                 '-' => Ok(Token::Expr(Expr::Sub)),
                 '<' => Ok(Token::Expr(Expr::MoveLeft)),
                 '>' => Ok(Token::Expr(Expr::MoveRight)),
+                '.' => Ok(Token::StackPush),
+                ',' => Ok(Token::StackPop),
+                '$' => {
+                    let mut inst = String::new();
+                    'gather: loop {
+                        if let Some(c) = code.next() {
+                            if c == '\n' || c == '\r' {
+                                break 'gather;
+                            } else {
+                                inst.push(c);
+                            }
+                        } else {
+                            break 'gather;
+                        }
+                    }
+                    if inst.len() == 0 {
+                        return Err(ParseError::EmptyAsmInstruction);
+                    }
+                    Ok(Token::Asm(inst))
+                },
                 // Starts a loop declaration
                 '[' => {
                     let mut children = Vec::new();
@@ -145,6 +171,7 @@ pub enum Expr {
     MoveLeft,
 }
 
+#[derive(PartialEq, Debug)]
 pub struct Module {
     pub module_name: String,
     pub tokens: Vec<Token>,
@@ -182,12 +209,12 @@ mod tests {
 :add{
     +++
 }"#.to_string();
-        let expected = Ok(vec![Token::FuncDecl { name: "add".to_string(), children: vec![
+        let expected = Ok(Module { module_name: String::new(), tokens: vec![Token::FuncDecl { name: "add".to_string(), children: vec![
             Token::Expr(Expr::Add),
             Token::Expr(Expr::Add),
             Token::Expr(Expr::Add),
-        ]}]);
-        assert_eq!(expected, parse(code));
+        ]}]});
+        assert_eq!(expected, parse(String::new(), code));
     }
 
     #[test]
@@ -199,7 +226,7 @@ mod tests {
         --
     }
 }"#.to_string();
-        let expected = Ok(vec![Token::FuncDecl {
+        let expected = Ok(Module { module_name: String::new(), tokens: vec![Token::FuncDecl {
             name: "hello".to_string(),
             children: vec![
                 Token::Expr(Expr::Add),
@@ -212,8 +239,8 @@ mod tests {
                     ]
                 }
             ],
-        }]);
-        assert_eq!(expected, parse(code));
+        }]});
+        assert_eq!(expected, parse(String::new(), code));
     }
 
     #[test]
@@ -222,13 +249,13 @@ mod tests {
 :main{
     @test
 }"#.to_string();
-        let expected = Ok(vec![Token::FuncDecl {
+        let expected = Ok(Module { module_name: String::new(), tokens: vec![Token::FuncDecl {
             name: "main".to_string(),
             children: vec![
                 Token::FuncCall { name: "test".to_string() },
             ],
-        }]);
-        assert_eq!(expected, parse(code));
+        }]});
+        assert_eq!(expected, parse(String::new(), code));
     }
 
     #[test]
@@ -237,7 +264,7 @@ mod tests {
 :main{
     +++[-]
 }"#.to_string();
-        let expected = Ok(vec![Token::FuncDecl {
+        let expected = Ok(Module { module_name: String::new(), tokens: vec![Token::FuncDecl {
             name: "main".to_string(),
             children: vec![
                 Token::Expr(Expr::Add),
@@ -245,7 +272,7 @@ mod tests {
                 Token::Expr(Expr::Add),
                 Token::Loop { children: vec![Token::Expr(Expr::Sub)] },
             ],
-        }]);
-        assert_eq!(expected, parse(code));
+        }]});
+        assert_eq!(expected, parse(String::new(), code));
     }
 }
