@@ -27,6 +27,7 @@ fn translate_token(token: Token, a: &mut CodeAssembler, func_map: &mut HashMap<S
             let mut start_label = a.create_label();
             let mut end_label = a.create_label();
 
+            a.zero_bytes().map_err(|e| CodegenError::Generic(format!("{e}")))?;
             a.set_label(&mut start_label).map_err(|e| CodegenError::Generic(format!("{e}")))?;
 
             a.mov(rcx, byte_ptr(r8)).map_err(|e| CodegenError::Generic(format!("{e}")))?;
@@ -43,11 +44,11 @@ fn translate_token(token: Token, a: &mut CodeAssembler, func_map: &mut HashMap<S
             a.jne(start_label).map_err(|e| CodegenError::Generic(format!("{e}")))?;
 
             a.set_label(&mut end_label).map_err(|e| CodegenError::Generic(format!("{e}")))?;
+            a.zero_bytes().map_err(|e| CodegenError::Generic(format!("{e}")))?;
         },
         Token::FuncDecl { name, children } => {
             let mut label = a.create_label();
             a.set_label(&mut label).map_err(|e| CodegenError::Generic(format!("{e}")))?;
-            a.zero_bytes().map_err(|e| CodegenError::Generic(format!("{e}")))?;
             if func_map.insert(name.clone(), label).is_some() {
                 return Err(CodegenError::FuncNameInUse(name));
             }
